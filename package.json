@@ -1,0 +1,77 @@
+{
+  "name": "utec-logger-resurrected",
+  "productName": "utec-logger-resurrected",
+  "version": "1.0.0",
+  "description": "Logger GUI for TurboXS Utec and attached Wideband AFR sensor",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/timothyr/utec-logger-resurrected.git"
+  },
+  "keywords": [
+    "car",
+    "turboxs",
+    "utec",
+    "logger",
+    "wideband",
+    "afr",
+    "aem",
+    "tuning",
+    "tuner",
+    "350z"
+  ],
+  "author": {
+    "name": "Tim Robertson",
+    "email": "timr@sfu.ca"
+  },
+  "license": "MIT",
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "utec_logger_resurrected"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.53",
+    "@electron-forge/maker-deb": "^6.0.0-beta.53",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.53",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.53",
+    "@electron-forge/maker-zip": "^6.0.0-beta.53",
+    "electron": "10.1.1"
+  },
+  "bugs": {
+    "url": "https://github.com/timothyr/utec-logger-resurrected/issues"
+  },
+  "homepage": "https://github.com/timothyr/utec-logger-resurrected#readme"
+}
