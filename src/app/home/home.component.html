@@ -19,7 +19,7 @@
     <tbody>
       <tr *ngFor="let rpm of rpmCells">
         <th scope="row">{{rpm}}</th>
-        <td class="table-primary" *ngFor="let load of loadCells">
+        <td class="table-warning" *ngFor="let load of loadCells">
           {{getCellHit(rpm, load)}}
         </td>
       </tr>

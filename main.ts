@@ -6,6 +6,8 @@ let win: BrowserWindow = null;
 const args = process.argv.slice(1),
   serve = args.some(val => val === '--serve');
 
+app.allowRendererProcessReuse = false;
+
 function createWindow(): BrowserWindow {
 
   const electronScreen = screen;

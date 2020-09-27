@@ -25,6 +25,7 @@
   "private": true,
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
+    "install": "electron-rebuild",
     "ng": "ng",
     "start": "npm-run-all -p electron:serve ng:serve",
     "build": "npm run electron:serve-tsc && ng build --base-href ./",
@@ -73,6 +74,7 @@
     "cross-env": "7.0.2",
     "electron": "9.3.0",
     "electron-builder": "22.8.0",
+    "electron-rebuild": "2.0.3",
     "electron-reload": "1.5.0",
     "eslint": "7.7.0",
     "eslint-plugin-import": "2.22.0",
@@ -99,5 +101,8 @@
   },
   "bugs": {
     "url": "https://github.com/timothyr/utec-logger-resurrected/issues"
+  },
+  "dependencies": {
+    "serialport": "9.0.1"
   }
 }
