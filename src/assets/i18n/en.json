@@ -1,0 +1,12 @@
+{
+  "PAGES": {
+      "HOME": {
+          "TITLE": "UTEC Logger Resurrected",
+          "GO_TO_DETAIL": "Go to Detail Page"
+      },
+      "DETAIL": {
+        "TITLE": "Detail page",
+        "BACK_TO_HOME": "Back to Home"
+    }
+  }
+}
