@@ -1,7 +1,28 @@
-<div class="container">
+<!-- <div class="container">
   <h1 class="title">
     {{ 'PAGES.HOME.TITLE' | translate }}
   </h1>
 
   <a routerLink="/detail">{{ 'PAGES.HOME.GO_TO_DETAIL' | translate }}</a>
+</div> -->
+
+<div class="table-responsive">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th scope="col" style="width:  8.33%">RPM</th>
+        <th scope="col" style="width:  8.33%" *ngFor="let load of loadCells">
+          {{load}}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let rpm of rpmCells">
+        <th scope="row">{{rpm}}</th>
+        <td class="table-primary" *ngFor="let load of loadCells">
+          {{getCellHit(rpm, load)}}
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>

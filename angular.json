@@ -20,7 +20,8 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/assets/bootstrap/bootstrap.min.css"
             ],
             "scripts": [],
             "customWebpackConfig": {
