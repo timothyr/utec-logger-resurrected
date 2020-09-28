@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ElectronService, SerialPortService } from 'app/core/services';
 
 const MAX_RPM = 7200;
 
@@ -15,7 +16,11 @@ export class HomeComponent implements OnInit {
 
   cellHits = {};
 
-  constructor(private router: Router) { 
+  constructor(
+    private router: Router,
+    private electronService: ElectronService,
+    private serialPortService: SerialPortService
+    ) { 
     this.loadCells = Array(11).fill(1).map((x, i) => i * 10);
     this.rpmCells = [];
     for (let rpm = 500; rpm < MAX_RPM; rpm += 250) {
@@ -27,7 +32,7 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   getCellHit(rpm: number, load: number) {
     const hit = this.cellHits[rpm][load];
