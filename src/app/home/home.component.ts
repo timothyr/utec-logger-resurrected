@@ -23,7 +23,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private electronService: ElectronService,
     private serialPortService: SerialPortService
-    ) { 
+  ) {
     this.loadCells = Array(11).fill(1).map((x, i) => i * 10);
     this.rpmCells = [];
     for (let rpm = 500; rpm < MAX_RPM; rpm += 250) {
@@ -38,25 +38,53 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (this.electronService.isElectron) {
       this.dataSubscription = combineLatest([this.serialPortService.utecObservable, this.serialPortService.afrGaugeObservable])
-      .subscribe((data) => {
+        .subscribe((data) => {
 
-        // If load data is not between 0 - 100 then it is erroneous
-        if ((data[0].load - Math.floor(data[0].load)) !== 0) {
-          return;
-        }
+          console.log(data[0].rpm, data[0].load, data[1]);
 
-        // Get closest rpm cell to the current rpm 
-        // e.g. 765 rpm -> 750 rpm cell
-        const closestRpm = this.closest(data[0].rpm, this.rpmCells);
+          let afr = data[1];
 
-        console.log("data", data[0], closestRpm);
+          // If afr is Not a Number then it's garbage data
+          if (isNaN(afr)) {
+            return;
+          }
 
-        // Count cell hit for RPM, Load and AFR
-        this.cellHits[closestRpm][data[0].load].push(data[1]);
+          if (isNaN(data[0].rpm)) {
+            return;
+          }
 
-        // Update angular view
-        this.cdr.detectChanges();
-      })
+          if (isNaN(data[0].load)) {
+            return;
+          }
+
+          // Ignore data when car is off
+          if (+data[0].rpm <= 0) {
+            return;
+          }
+
+          // Cast string to number
+          afr = +afr;
+
+          // Sanity check
+          if (afr > 25 || afr < 3) {
+            return;
+          }
+
+          // If load data is not between 0 - 100 then it is erroneous
+          if ((data[0].load - Math.floor(data[0].load)) !== 0) {
+            return;
+          }
+
+          // Get closest rpm cell to the current rpm 
+          // e.g. 765 rpm -> 750 rpm cell
+          const closestRpm = this.closest(data[0].rpm, this.rpmCells);
+
+          // Count cell hit for RPM, Load and AFR
+          this.cellHits[closestRpm][data[0].load].push(afr);
+
+          // Update angular view
+          this.cdr.detectChanges();
+        })
     }
   }
 
@@ -68,12 +96,47 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   getCellHit(rpm: number, load: number) {
-    const hit = this.cellHits[rpm][load];
-    if (hit.length === 0) {
+    const hits = this.cellHits[rpm][load];
+    if (hits.length === 0) {
       return 0;
     }
 
-    return hit.length;
+    return +(hits.reduce((a, b) => (a + b)) / hits.length).toFixed(2);
+  }
+
+  getCellBackgroundColor(rpm: number, load: number) {
+    const afr = this.getCellHit(rpm, load);
+
+    // Default
+    if (afr == 0) {
+      return '#eeeeee';
+    }
+
+    // From lean (16+) to rich (10-)
+
+    if (afr > 16) {
+      return '#ff6666';
+    }
+    if (afr > 15) {
+      return '#ffbb22';
+    }
+    if (afr > 14) {
+      return '#aabbff';
+    }
+    if (afr > 13) {
+      return '#cceeaa';
+    }
+    if (afr > 12) {
+      return '#aaffcc';
+    }
+    if (afr > 11) {
+      return '#aaeeaa';
+    }
+    if (afr > 10) {
+      return '#55ff44';
+    }
+
+    return '#00ff00';
   }
 
   // closest algorithm by paxdiablo: https://stackoverflow.com/a/8584940
@@ -82,17 +145,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     let lo = 0;
     let hi = arr.length - 1;
     while (hi - lo > 1) {
-        mid = Math.floor ((lo + hi) / 2);
-        if (arr[mid] < num) {
-            lo = mid;
-        } else {
-            hi = mid;
-        }
+      mid = Math.floor((lo + hi) / 2);
+      if (arr[mid] < num) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
     }
     if (num - arr[lo] <= arr[hi] - num) {
-        return arr[lo];
+      return arr[lo];
     }
     return arr[hi];
-}
+  }
 
 }
