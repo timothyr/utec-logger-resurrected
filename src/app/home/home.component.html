@@ -1,3 +1,20 @@
+<nav class="navbar navbar-light bg-light">
+  <form class="form-inline">
+    <button class="btn btn-sm mr-1" type="button" 
+      (click)="startLogging()" 
+      [disabled]="logging"
+      [ngClass]="{'btn-success': !logging, 'btn-outline-success': logging}">Start</button>
+    <button class="btn btn-sm mr-1"  type="button" 
+      (click)="stopLogging()" 
+      [disabled]="!logging"
+      [ngClass]="{'btn-danger': logging, 'btn-outline-danger': !logging}">Stop</button>
+
+    <button class="btn btn-sm mr-1 btn-outline-info"  type="button" (click)="clearLogs()">Clear</button>
+    <span *ngIf="error">
+      {{error}}
+    </span>
+  </form>
+</nav>
 <div class="table-responsive">
   <table class="table table-bordered afr-table">
     <thead>

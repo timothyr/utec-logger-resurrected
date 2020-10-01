@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 import * as serialport from 'serialport';
 import * as serialport_readline from '@serialport/parser-readline';
 
-import { Observable } from 'rxjs';
+import { combineLatest, Observable, Subscriber } from 'rxjs';
 
 export class UTECValues {
   constructor(rpm: number, load: number) {
@@ -33,6 +33,10 @@ export class SerialPortService {
     return !!(window && window.process && window.process.type);
   }
 
+  private afrPort = null;
+  private utecPort = null;
+
+  errorObservable: Observable<any> = null;
   utecObservable: Observable<UTECValues> = null;
   afrGaugeObservable: Observable<number> = null;
 
@@ -66,46 +70,86 @@ export class SerialPortService {
       this.SerialPort.list().then((data) => {
         console.log("ports", data);
       })
-
-      // AFR Gauge
-      this.afrGaugeObservable = new Observable<number>((subscriber) => {
-        const port = new this.SerialPort('COM3', { baudRate: 9600 });
-        const parser = port.pipe(new this.Readline({delimiter: '\n'}));
-        parser.on('data', (data) => {
-          subscriber.next(+data);
-        });
-      })
-
-      // UTEC
-      this.utecObservable = new Observable<UTECValues>((subscriber) => {
- 
-        const port = new this.SerialPort('COM4', { baudRate: 19200 }, (err) => {
-          if (err) {
-            return console.log('Error opening COM4: ', err.message)
-          }
-        });
-
-        // Enter UTEC Logger mode 1
-        port.write('1', (err) => {
-          if (err) {
-            return console.log('Error entering UTEC Logger');
-          }
-        })
-
-        //  RPM   MAP  MAF TPS Site Count   Inj#1 Ign#1  Inj#1  Ign   Fuel     MAF  
-        const parser = port.pipe(new this.Readline({delimiter: '\n'}));
-        parser.on('data', (data) => {
-          // console.log(data);
-          const dataCleaned = data.replace(/ +(?= )/g,'');
-          const split = dataCleaned.trim().split(' ');
-          const rpm = +split[0];
-          const load = +split[4];
-          // console.log('RPM / LOAD', rpm, load);
-          subscriber.next(new UTECValues(rpm, load));
-        });
-      })
-     
-
     }
+  }
+
+  closePorts() {
+    if (this.afrPort && this.afrPort.isOpen) {
+      this.afrPort.close();
+    }
+
+    if (this.utecPort && this.utecPort.isOpen) {
+      this.utecPort.close();
+    }
+  }
+
+  openPorts() {
+    // AFR Gauge
+    this.afrGaugeObservable = new Observable<number>((subscriber) => {
+      this.afrPort = new this.SerialPort('COM3', { baudRate: 9600 }, (err) => {
+        if (err) {
+          subscriber.error(`Error opening AFR port: ${err}`);
+        }
+      });
+
+      const parser = this.afrPort.pipe(new this.Readline({delimiter: '\n'}));
+
+      parser.on('data', (data) => {
+        subscriber.next(+data);
+      });
+
+      this.afrPort.on('error', (portErr) => {
+        console.log(portErr);
+        subscriber.error(`Port error`);
+        subscriber.complete();
+        this.afrPort.close();
+      });
+
+      this.afrPort.on('close', () => {
+        subscriber.complete();
+      });
+    })
+
+    // UTEC
+    this.utecObservable = new Observable<UTECValues>((subscriber) => {
+
+      this.utecPort = new this.SerialPort('COM4', { baudRate: 19200 }, (err) => {
+        if (err) {
+          subscriber.error(`Error opening UTEC port: ${err}`);
+        }
+      });
+
+      this.utecPort.on('error', (portErr) => {
+        console.log(portErr);
+        subscriber.error(`Port error`);
+        subscriber.complete();
+        this.utecPort.close();
+      });
+
+      this.utecPort.on('close', () => {
+        subscriber.complete();
+      });
+
+      // Enter UTEC Logger mode 1
+      this.utecPort.write('1', (err) => {
+        if (err) {
+          return console.log('Error entering UTEC Logger');
+        }
+      })
+
+      //  RPM   MAP  MAF TPS Site Count   Inj#1 Ign#1  Inj#1  Ign   Fuel     MAF  
+      const parser = this.utecPort.pipe(new this.Readline({delimiter: '\n'}));
+      parser.on('data', (data) => {
+        // console.log(data);
+        const dataCleaned = data.replace(/ +(?= )/g,'');
+        const split = dataCleaned.trim().split(' ');
+        const rpm = +split[0];
+        const load = +split[4];
+        // console.log('RPM / LOAD', rpm, load);
+        subscriber.next(new UTECValues(rpm, load));
+      });
+    });
+
+    return combineLatest([this.utecObservable, this.afrGaugeObservable]);
   }
 }

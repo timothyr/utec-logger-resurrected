@@ -19,6 +19,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   dataSubscription: Subscription = null;
 
+  error: any = null;
+
+  logging = false;
+
   constructor(
     private cdr: ChangeDetectorRef,
     private electronService: ElectronService,
@@ -26,6 +30,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {
     this.loadCells = Array(11).fill(1).map((x, i) => i * 10);
     this.rpmCells = [];
+    this.initLogs();
+  }
+
+  initLogs() {
     for (let rpm = 500; rpm < MAX_RPM; rpm += 250) {
       this.rpmCells.push(rpm);
       this.cellHits[rpm] = {};
@@ -35,9 +43,30 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnInit(): void {
+  clearLogs() {
+    this.rpmCells.forEach(rpm => {
+      this.cellHits[rpm] = {};
+      this.loadCells.forEach(load => {
+        this.cellHits[rpm][load] = [];
+      });
+    });
+    this.cdr.detectChanges();
+  }
+
+  stopLogging() {
     if (this.electronService.isElectron) {
-      this.dataSubscription = combineLatest([this.serialPortService.utecObservable, this.serialPortService.afrGaugeObservable])
+      this.dataSubscription.unsubscribe();
+      this.serialPortService.closePorts();
+      this.logging = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  startLogging() {
+    if (this.electronService.isElectron) {
+      this.logging = true;
+      this.error = null;
+      this.dataSubscription = this.serialPortService.openPorts()
         .subscribe((data) => {
 
           console.log(data[0].rpm, data[0].load, data[1]);
@@ -84,8 +113,22 @@ export class HomeComponent implements OnInit, OnDestroy {
 
           // Update angular view
           this.cdr.detectChanges();
+        },
+        (err) => {
+          console.log("Logger error", err);
+          this.error = err;
+          this.stopLogging();
+          this.cdr.detectChanges();
+        },
+        () => {
+          console.log("Data completed");
+          this.logging = false;
+          this.cdr.detectChanges();
         })
     }
+  }
+
+  ngOnInit(): void {
   }
 
   ngOnDestroy(): void {
