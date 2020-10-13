@@ -201,4 +201,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     return arr[hi];
   }
 
+  
+  onSwipe(evt) {
+    const x = Math.abs(evt.deltaX) > 40 ? (evt.deltaX > 0 ? 'right' : 'left'):'';
+    const y = Math.abs(evt.deltaY) > 40 ? (evt.deltaY > 0 ? 'down' : 'up') : '';
+
+    console.log(`swiped ${x} ${y}`);
+  }
+
 }
