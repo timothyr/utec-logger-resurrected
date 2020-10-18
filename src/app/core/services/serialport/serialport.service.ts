@@ -8,6 +8,8 @@ import * as serialport_readline from '@serialport/parser-readline';
 
 import { combineLatest, Observable, Subscriber } from 'rxjs';
 
+const UTEC_DELAY_MS = 500;
+
 export class UTECValues {
   constructor(rpm: number, load: number) {
     this.rpm = rpm;
@@ -146,10 +148,15 @@ export class SerialPortService {
         const rpm = +split[0];
         const load = +split[4];
         // console.log('RPM / LOAD', rpm, load);
-        subscriber.next(new UTECValues(rpm, load));
+
+        setTimeout(this.delayUpdateSubscriber, UTEC_DELAY_MS, subscriber, rpm, load);
       });
     });
 
     return combineLatest([this.utecObservable, this.afrGaugeObservable]);
+  }
+
+  delayUpdateSubscriber(subscriber, rpm, load) {
+    subscriber.next(new UTECValues(rpm, load));
   }
 }
