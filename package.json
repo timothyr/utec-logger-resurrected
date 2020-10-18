@@ -103,6 +103,7 @@
     "url": "https://github.com/timothyr/utec-logger-resurrected/issues"
   },
   "dependencies": {
+    "hammerjs": "2.0.8",
     "serialport": "9.0.1"
   }
 }
