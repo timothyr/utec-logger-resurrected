@@ -8,6 +8,8 @@ Currently supports AEM Uego AFR Gauge.
 
 Tested with UTEC for 350Z.
 
+![UTEC Logger Resurrected](docs/utec-logger-resurrected-large.jpg?raw=true "UTEC Logger Resurrected")
+
 ## Development Info
 
 - **in a terminal window** -> npm start
